@@ -16,7 +16,7 @@
   @keyframes bounce { from { transform: translateY(0) rotate(-5deg); } to { transform: translateY(-15px) rotate(5deg); } }
   #loader p { color:white; font-size:13px; font-weight:700; margin:0; opacity:0.8; }
   .load-bar { width:220px; height:18px; background:#111; border:3px solid #fff; border-radius:20px; overflow:hidden; }
-  .load-fill { height:100%; width:0%; background:linear-gradient(90deg, #ffeb3b, #ff9800, #ff5252); border-radius:20px; animation: fill 1.4s ease forwards; }
+  .load-fill { height:100%; width:0%; background:linear-gradient(90deg, #ffeb3b, #ff9800, #ff5252); border-radius:20px; animation: fill var(--load-time, 6.5s) linear forwards; }
   @keyframes fill { 0% { width:0%; } 30% { width:35%; } 60% { width:70%; } 100% { width:100%; } }
   .load-tip { color:#81d4fa; font-size:11px; }
 
@@ -110,12 +110,14 @@ let loader = document.getElementById('loader');
 let birdY = 250, velocity = 0, gravity = 0.45, jump = -8;
 let score = 0, playing = false, pipes = [], gameLoop, pipeTimer;
 
-// Hide loading screen after 1.5s
+// Hide loading screen after RANDOM 6-7 seconds
+let loadTime = 6000 + Math.random() * 1000; // 6000ms to 7000ms
+document.querySelector('.load-fill').style.setProperty('--load-time', (loadTime / 1000) + 's');
 window.addEventListener('load', () => {
-  setTimeout(() => { loader.classList.add('hidden'); }, 1500);
+  setTimeout(() => { loader.classList.add('hidden'); }, loadTime);
 });
 // Fallback in case load already fired
-setTimeout(() => { loader.classList.add('hidden'); }, 1800);
+setTimeout(() => { loader.classList.add('hidden'); }, loadTime + 300);
 
 function flap() {
   if (!playing) startGame();
