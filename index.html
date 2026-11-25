@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Piped Birds - Kayden</title>
+<style>
+  body { margin:0; background:#1a1a2e; display:flex; justify-content:center; align-items:center; height:100vh; font-family:Arial; overflow:hidden; }
+  #game { position:relative; width:400px; height:600px; background:linear-gradient(180deg, #4fc3f7 0%, #81d4fa 30%, #b3e5fc 55%, #e1f5fe 75%, #fff9c4 100%); overflow:hidden; border:4px solid #111; border-radius:12px; box-shadow: 0 0 40px rgba(0,0,0,0.6); }
+
+  /* CLOUDS */
+  .cloud { position:absolute; background:white; border-radius:50px; opacity:0.9; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+  .cloud::before, .cloud::after { content:""; position:absolute; background:white; border-radius:50%; }
+  .c1 { width:80px; height:24px; top:60px; left:30px; animation: drift 25s linear infinite; }
+  .c1::before { width:35px; height:35px; top:-15px; left:12px; }
+  .c1::after { width:25px; height:25px; top:-10px; left:40px; }
+  .c2 { width:60px; height:20px; top:120px; left:250px; animation: drift 18s linear infinite; opacity:0.7; }
+  .c2::before { width:28px; height:28px; top:-12px; left:10px; }
+  .c2::after { width:20px; height:20px; top:-8px; left:32px; }
+  @keyframes drift { from { transform:translateX(450px); } to { transform:translateX(-120px); } }
+
+  /* GROUND */
+  #ground { position:absolute; bottom:0; left:0; width:100%; height:70px; background:linear-gradient(180deg, #8d6e63 0%, #a1887f 10%, #c2a878 12%, #8bc34a 12%, #7cb342 35%, #558b2f 100%); border-top:4px solid #5d4037; z-index:3; }
+  #ground::after { content:""; position:absolute; top:12px; left:0; width:100%; height:8px; background: repeating-linear-gradient(90deg, #558b2f 0 20px, #689f38 20px 40px); opacity:0.6; }
+
+  /* === ULTRA BIRD === */
+  #bird { position:absolute; width:44px; height:34px; left:80px; top:250px; z-index:10; transition: transform 0.08s; }
+  .bird-body { position:absolute; width:44px; height:34px; background: radial-gradient(circle at 35% 30%, #fff59d 0%, #ffeb3b 35%, #ffc107 65%, #ff8f00 100%); border:2px solid #1a1a1a; border-radius: 50% 55% 45% 50% / 55% 55% 45% 45%; box-shadow: inset -3px -4px 6px rgba(0,0,0,0.25), 0 4px 8px rgba(0,0,0,0.3); overflow:visible; }
+  .bird-belly { position:absolute; width:28px; height:18px; background: radial-gradient(circle, #fffde7, #ffecb3); border-radius:50%; bottom:2px; left:7px; opacity:0.9; }
+  .bird-wing { position:absolute; width:24px; height:16px; background: linear-gradient(180deg, #ff7043, #e64a19); border:1.5px solid #1a1a1a; border-radius: 50% 10% 50% 50%; top:12px; left:6px; transform-origin: top left; animation: flap 0.35s ease-in-out infinite alternate; box-shadow: inset 0 -2px 3px rgba(0,0,0,0.3); z-index:2; }
+  .bird-wing::after { content:""; position:absolute; width:18px; height:3px; background:#bf360c; bottom:3px; left:2px; border-radius:5px; }
+  @keyframes flap { from { transform: rotate(-15deg) scaleY(1); } to { transform: rotate(25deg) scaleY(0.85); } }
+  .bird-tail { position:absolute; width:14px; height:10px; background:#e65100; border:1.5px solid #1a1a1a; border-radius: 0 50% 50% 0; left:-10px; top:15px; transform: rotate(-10deg); }
+  .bird-tail::after { content:""; position:absolute; width:10px; height:4px; background:#ff7043; top:2px; left:2px; border-radius:3px; }
+  .bird-eye { position:absolute; width:13px; height:13px; background:white; border:1.5px solid #111; border-radius:50%; top:5px; right:6px; z-index:3; box-shadow: inset 0 0 2px rgba(0,0,0,0.2); }
+  .bird-eye::after { content:""; position:absolute; width:6px; height:6px; background:#111; border-radius:50%; top:3px; left:4px; }
+  .bird-eye::before { content:""; position:absolute; width:2px; height:2px; background:white; border-radius:50%; top:4px; left:6px; z-index:1; }
+  .bird-beak { position:absolute; width:14px; height:9px; background:linear-gradient(180deg, #ff6d00, #e65100); border:1.5px solid #111; border-radius: 0 50% 50% 0; top:14px; right:-10px; z-index:3; clip-path: polygon(0 20%, 100% 50%, 0 80%); }
+  .bird-cheek { position:absolute; width:9px; height:7px; background:#ff8a65; border-radius:50%; top:14px; right:10px; opacity:0.7; }
+
+  /* === ULTRA REALISTIC PIPES === */
+  .pipe { position:absolute; width:62px; background: linear-gradient(90deg, #0b3d12 0%, #145a1e 8%, #1f7a2e 18%, #2e9e3f 30%, #5fd35a 42%, #b9ff9e 50%, #eaffd0 52%, #5fd35a 60%, #2e9e3f 72%, #145a1e 88%, #0b3d12 100%); border-left:2px solid #071f0a; border-right:2px solid #071f0a; box-shadow: inset -4px 0 8px rgba(0,0,0,0.45), inset 4px 0 8px rgba(255,255,255,0.25), 4px 0 12px rgba(0,0,0,0.25); }
+  .pipe::before { content:""; position:absolute; top:0; left:12px; width:6px; height:100%; background:linear-gradient(180deg, rgba(255,255,255,0.45), rgba(255,255,255,0.05)); border-radius:5px; }
+  .pipe::after { content:""; position:absolute; top:0; right:14px; width:3px; height:100%; background:rgba(0,0,0,0.18); }
+  .pipe-cap { position:absolute; left:-5px; width:72px; height:30px; background: linear-gradient(90deg, #0b3d12 0%, #1a6a26 12%, #33a844 28%, #7fe06a 42%, #d8ffc0 50%, #7fe06a 58%, #33a844 72%, #1a6a26 88%, #0b3d12 100%); border:2.5px solid #071f0a; border-radius:4px; box-shadow: 0 4px 8px rgba(0,0,0,0.4), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -4px 6px rgba(0,0,0,0.3); }
+  .pipe-cap::before { content:""; position:absolute; top:6px; left:8px; width:56px; height:6px; background:rgba(255,255,255,0.35); border-radius:10px; }
+  .bolt { position:absolute; width:6px; height:6px; background:radial-gradient(circle at 30% 30%, #e0e0e0, #666); border:1px solid #222; border-radius:50%; }
+  .pipe-top-cap { bottom:-2px; }
+  .pipe-bot-cap { top:-2px; }
+
+  #score { position:absolute; top:14px; left:50%; transform:translateX(-50%); font-size:36px; font-weight:900; color:white; text-shadow: 3px 3px 0 #111, -1px -1px 0 #111, 1px -1px 0 #111, -1px 1px 0 #111; z-index:20; font-family: 'Arial Black', Arial; letter-spacing:1px; }
+  #start { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:linear-gradient(180deg, #fff, #ffe082); padding:20px 28px; border:4px solid #111; font-weight:900; cursor:pointer; text-align:center; z-index:30; border-radius:16px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); font-size:20px; line-height:1.4; }
+  #start small { font-weight:600; font-size:13px; color:#555; }
+</style>
+</head>
+<body>
+<div id="game">
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div id="score">0</div>
+  <div id="bird">
+    <div class="bird-tail"></div>
+    <div class="bird-body">
+      <div class="bird-belly"></div>
+      <div class="bird-wing"></div>
+      <div class="bird-cheek"></div>
+      <div class="bird-eye"></div>
+      <div class="bird-beak"></div>
+    </div>
+  </div>
+  <div id="ground"></div>
+  <div id="start">PIPED BIRDS<br><span style="font-size:28px">🐤</span><br><small>ULTRA GRAPHICS EDITION<br>Click / Space to Flap<br>by affedeede</small></div>
+</div>
+
+<script>
+let game = document.getElementById('game');
+let bird = document.getElementById('bird');
+let scoreEl = document.getElementById('score');
+let startEl = document.getElementById('start');
+let birdY = 250, velocity = 0, gravity = 0.45, jump = -8;
+let score = 0, playing = false, pipes = [], gameLoop, pipeTimer;
+
+function flap() {
+  if (!playing) startGame();
+  velocity = jump;
+  bird.style.transform = 'rotate(-18deg)';
+  setTimeout(()=>{ if(playing) bird.style.transform='rotate(8deg)'; }, 150);
+}
+function startGame() {
+  playing = true; score = 0; scoreEl.textContent = 0; birdY = 250; velocity = 0;
+  pipes.forEach(p => p.el.remove()); pipes = [];
+  startEl.style.display = 'none';
+  clearInterval(gameLoop); clearInterval(pipeTimer);
+  gameLoop = setInterval(update, 20);
+  createPipe();
+  pipeTimer = setInterval(() => { if(playing) createPipe(); }, 2100);
+}
+function createPipe() {
+  let gap = 165;
+  let topHeight = Math.random() * 260 + 50;
+  let topPipe = document.createElement('div');
+  topPipe.className = 'pipe';
+  topPipe.style.height = topHeight + 'px'; topPipe.style.top = '0px'; topPipe.style.left = '400px';
+  let topCap = document.createElement('div'); topCap.className = 'pipe-cap pipe-top-cap';
+  topCap.innerHTML = '<div class="bolt" style="top:8px;left:6px"></div><div class="bolt" style="top:8px;right:6px"></div>';
+  topPipe.appendChild(topCap);
+
+  let botPipe = document.createElement('div');
+  botPipe.className = 'pipe';
+  botPipe.style.height = (530 - topHeight - gap) + 'px'; botPipe.style.top = (topHeight + gap) + 'px'; botPipe.style.left = '400px';
+  let botCap = document.createElement('div'); botCap.className = 'pipe-cap pipe-bot-cap';
+  botCap.innerHTML = '<div class="bolt" style="top:8px;left:6px"></div><div class="bolt" style="top:8px;right:6px"></div>';
+  botPipe.appendChild(botCap);
+
+  game.appendChild(topPipe); game.appendChild(botPipe);
+  pipes.push({el: topPipe, x: 400, scored: false, top: true, h: topHeight});
+  pipes.push({el: botPipe, x: 400, scored: false, top: false, h: topHeight, gap: gap});
+}
+function update() {
+  velocity += gravity; birdY += velocity; bird.style.top = birdY + 'px';
+  if (birdY > 500 || birdY < 0) gameOver();
+  pipes.forEach(p => {
+    p.x -= 3; p.el.style.left = p.x + 'px';
+    if (!p.scored && p.x < 80) { if (p.top) { score++; scoreEl.textContent = score; } p.scored = true; }
+    let birdLeft = 80, birdRight = 122, birdTop = birdY, birdBottom = birdY + 34;
+    let pipeLeft = p.x, pipeRight = p.x + 62;
+    if (birdRight > pipeLeft && birdLeft < pipeRight) {
+      if (p.top) { if (birdTop < p.h) gameOver(); }
+      else { if (birdBottom > p.h + p.gap) gameOver(); }
+    }
+  });
+  pipes = pipes.filter(p => p.x > -80);
+}
+function gameOver() {
+  playing = false; clearInterval(gameLoop); clearInterval(pipeTimer);
+  bird.style.transform = 'rotate(80deg)';
+  startEl.innerHTML = 'GAME OVER<br>Score: ' + score + '<br><br>PIPED BIRDS<br><small>By Kayden</small><br>TAP TO PLAY AGAIN';
+  startEl.style.display = 'block';
+}
+document.addEventListener('keydown', e => { if(e.code === 'Space') { e.preventDefault(); flap(); } });
+game.addEventListener('click', flap);
+</script>
+</body>
+</html>
